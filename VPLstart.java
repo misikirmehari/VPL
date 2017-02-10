@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 
 public class VPLstart {
-    static final int max = 1000;
+    static final int max = 10000;
     static int[] mem = new int[max];
     static int ip, bp, sp, rv, hp, numPassed, gp;
     
@@ -108,6 +108,8 @@ public class VPLstart {
             op = mem[ip];
             int a, b, c, n;
             
+           
+            
             if (op != 0) {
                 
                 if (op == 1) {
@@ -134,7 +136,9 @@ public class VPLstart {
                     n = mem[ip + 1];
                     sp += n;
                     ip += 2;
-                } else if (op == 5) {
+                }
+                
+                else if (op == 5) {
                     a = mem[ip + 1];
                     rv = mem[(bp + 2 + a)];
                     ip = mem[(bp + 1)];

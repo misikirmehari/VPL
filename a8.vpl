@@ -1,6 +1,6 @@
-0 factorial test case
+
 4 3  allocate 3 locals
-27 0  input to cell 0  which holds n
+22 0 8
 3 0  pass n
 2 1001   call factorial function
 6 1  get rv into cell 1

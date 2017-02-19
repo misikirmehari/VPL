@@ -1,3 +1,5 @@
+
+
 import java.io.*;
 import java.util.*;
 
@@ -16,7 +18,7 @@ public class VPLstart {
         // load the program into the front part of
         // memory
         BufferedReader input = new BufferedReader(new FileReader(fileName));
-        Scanner usr_input = new Scanner(System.in);
+        BufferedReader usr_input = new BufferedReader(new InputStreamReader(System.in));
         String line;
         StringTokenizer st;
         int opcode;
@@ -103,302 +105,305 @@ public class VPLstart {
         // interpret the VPL code:
         int op;
         int flag = 0;
+        int a, b, c, n;
         
         do {
             op = mem[ip];
-            int a, b, c, n;
+            a = mem[ip+1];
+            b = mem[ip+2];
+            c = mem[ip+3];
             
-           
+            if(op==0){
+                ip += 1;
+            }
             
-            if (op != 0) {
-                
-                if (op == 1) {
-                    ip += 2;
+            else if (op == 1) {
+                ip += 2;
+            }
+            
+            else if (op == 2) {
+                mem[sp] = bp;
+                mem[(sp + 1)] = ip + 2;
+                bp = sp;
+                sp += 2 + numPassed;
+                ip = mem[ip+1];
+                numPassed = 0;
+            }
+            
+            else if (op == 3) {
+                a = mem[ip + 1];
+                mem[(sp + numPassed + 2)] = mem[(bp + 2 + a)];
+                numPassed += 1;
+                ip += 2;
+            }
+            
+            else if (op == 4) {
+                n = mem[ip + 1];
+                sp += n;
+                ip += 2;
+            }
+            
+            else if (op == 5) {
+                a = mem[ip + 1];
+                rv = mem[(bp + 2 + a)];
+                ip = mem[(bp + 1)];
+                sp = bp;
+                bp = mem[bp];
+            }
+            
+            else if (op == 6) {
+                a = mem[ip + 1];
+                mem[(bp + 2 + a)] = rv;
+                ip += 2;
+            }
+            
+            else if (op == 7) {
+                ip = mem[ip+1];
+            }
+            
+            else if (op == 8) {
+                b = mem[ip + 2];
+                if (mem[(bp + 2 + b)] != 0) {
+                    ip = mem[ip+1];
                 }
-                
-                if (op == 2) {
-                    mem[sp] = bp;
-                    mem[(sp + 1)] = ip;
-                    bp = sp;
-                    sp = sp + 2 + numPassed;
-                    ip += 2;
-                    numPassed = 0;
+                else {
+                ip+=3;    // Added while debugging test a8
                 }
+            }
+            
+            else if (op == 9) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                c = mem[ip + 3];
                 
-                else if (op == 3) {
-                    a = mem[ip + 1];
-                    mem[(sp + numPassed + 2)] = mem[(bp + 2 + a)];
-                    numPassed += 1;
-                    ip += 2;
+                mem[(bp + 2 + a)] = mem[(bp + 2 + b)] + mem[(bp + 2 + c)];
+                ip += 4;
+            }
+            
+            else if (op == 10) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                c = mem[ip + 3];
+                mem[(bp + 2 + a)] = mem[(bp + 2 + b)] - mem[(bp + 2 + c)];
+                ip += 4;
+            }
+            
+            else if (op == 11) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                c = mem[ip + 3];
+                
+                mem[(bp + 2 + a)] = mem[(bp + 2 + b)] * mem[(bp + 2 + c)];
+                ip += 4;
+            }
+            
+            else if (op == 12) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                c = mem[ip + 3];
+                
+                mem[(bp + 2 + a)] = mem[(bp + 2 + b)] / mem[(bp + 2 + c)];
+                ip += 4;
+            }
+            
+            else if (op == 13) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                c = mem[ip + 3];
+                
+                mem[(bp + 2 + a)] = mem[(bp + 2 + b)] % mem[(bp + 2 + c)];
+                ip += 4;
+            }
+            
+            else if (op == 14) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                c = mem[ip + 3];
+                
+                if (mem[(bp + 2 + b)] == mem[(bp + 2 + c)]) {
+                    mem[(bp + 2 + a)] = 1;
+                } else {
+                    mem[(bp + 2 + a)] = 0;
                 }
-                
-                else if (op == 4) {
-                    n = mem[ip + 1];
-                    sp += n;
-                    ip += 2;
-                }
-                
-                else if (op == 5) {
-                    a = mem[ip + 1];
-                    rv = mem[(bp + 2 + a)];
-                    ip = mem[(bp + 1)];
-                    sp = bp;
-                    bp = mem[bp];
-                }
-                
-                else if (op == 6) {
-                    a = mem[ip+1];
-                    mem[(bp + 2 + a)] = rv;
-                    ip += 2;
-                }
-                
-                else if (op == 7) {
-                    ip = mem[ip];
-                }
-                
-                else if (op == 8) {
-                    b = mem[ip + 2];
-                    if (mem[(bp + 2 + b)] != 0) {
-                        ip = mem[ip];
-                    }
-                }
-                
-                else if (op == 9) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    c = mem[ip + 3];
+                ip += 4;
+            }
+            
+            else if (op == 15) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                c = mem[ip + 3];
+                if (mem[(bp + 2 + b)] != mem[(bp + 2 + c)]) {
                     
-                    mem[(bp + 2 + a)] = mem[(bp + 2 + b)] + mem[(bp + 2 + c)];
-                    ip += 4;
+                    mem[(bp + 2 + a)] = 1;
+                } else {
+                    mem[(bp + 2 + a)] = 0;
                 }
+                ip += 4;
+            }
+            
+            else if (op == 16) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                c = mem[ip + 3];
+                if (mem[(bp + 2 + b)] < mem[(bp + 2 + c)]) {
+                    mem[(bp + 2 + a)] = 1;
+                } else {
+                    mem[(bp + 2 + a)] = 0;
+                }
+                ip += 4;
+            }
+            
+            else if (op == 17) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                c = mem[ip + 3];
                 
-                else if (op == 10) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    c = mem[ip + 3];
-                    mem[(bp + 2 + a)] = mem[(bp + 2 + b)] - mem[(bp + 2 + c)];
-                    ip += 4;
+                if (mem[(bp + 2 + b)] <= mem[(bp + 2 + c)]) {
+                    mem[(bp + 2 + a)] = 1;
+                } else {
+                    mem[(bp + 2 + a)] = 0;
                 }
+                ip += 4;
+            }
+            
+            else if (op == 18) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                c = mem[ip + 3];
                 
-                else if (op == 11) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    c = mem[ip + 3];
-                    
-                    mem[(bp + 2 + a)] = mem[(bp + 2 + b)] * mem[(bp + 2 + c)];
-                    ip += 4;
+                if ((mem[(bp + 2 + b)] != 0) && (mem[(bp + 2 + c)] != 0)) {
+                    mem[(bp + 2 + a)] = 1;
+                } else {
+                    mem[(bp + 2 + a)] = 0;
                 }
+                ip += 4;
+            }
+            
+            else if (op == 19) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                c = mem[ip + 3];
                 
-                else if (op == 12) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    c = mem[ip + 3];
-                    
-                    mem[(bp + 2 + a)] = mem[(bp + 2 + b)] / mem[(bp + 2 + c)];
-                    ip += 4;
+                if ((mem[(bp + 2 + b)] != 0) || (mem[(bp + 2 + c)] != 0)) {
+                    mem[(bp + 2 + a)] = 1;
+                } else {
+                    mem[(bp + 2 + a)] = 0;
                 }
+                ip += 4;
+            }
+            
+            else if (op == 20) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
                 
-                else if (op == 13) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    c = mem[ip + 3];
-                    
-                    mem[(bp + 2 + a)] = mem[(bp + 2 + b)] % mem[(bp + 2 + c)];
-                    ip += 4;
+                if (mem[(bp + 2 + b)] == 0) {
+                    mem[(bp + 2 + a)] = 1;
+                } else {
+                    mem[(bp + 2 + a)] = 0;
                 }
-                
-                else if (op == 14) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    c = mem[ip + 3];
-                    
-                    if (mem[(bp + 2 + b)] == mem[(bp + 2 + c)]) {
-                        mem[(bp + 2 + a)] = 1;
-                    } else {
-                        mem[(bp + 2 + a)] = 0;
-                    }
-                    ip += 4;
-                }
-                
-                else if (op == 15) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    c = mem[ip + 3];
-                    if (mem[(bp + 2 + b)] != mem[(bp + 2 + c)]) {
-                        
-                        mem[(bp + 2 + a)] = 1;
-                    } else {
-                        mem[(bp + 2 + a)] = 0;
-                    }
-                    ip += 4;
-                }
-                
-                else if (op == 16) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    c = mem[ip + 3];
-                    if (mem[(bp + 2 + b)] < mem[(bp + 2 + c)]) {
-                        mem[(bp + 2 + a)] = 1;
-                    } else {
-                        mem[(bp + 2 + a)] = 0;
-                    }
-                    ip += 4;
-                }
-                
-                else if (op == 17) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    c = mem[ip + 3];
-                    
-                    if (mem[(bp + 2 + b)] <= mem[(bp + 2 + c)]) {
-                        mem[(bp + 2 + a)] = 1;
-                    } else {
-                        mem[(bp + 2 + a)] = 0;
-                    }
-                    ip += 4;
-                }
-                
-                else if (op == 18) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    c = mem[ip + 3];
-                    
-                    if ((mem[(bp + 2 + b)] != 0) && (mem[(bp + 2 + c)] != 0)) {
-                        mem[(bp + 2 + a)] = 1;
-                    } else {
-                        mem[(bp + 2 + a)] = 0;
-                    }
-                    ip += 4;
-                }
-                
-                else if (op == 19) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    c = mem[ip + 3];
-                    
-                    if ((mem[(bp + 2 + b)] != 0) || (mem[(bp + 2 + c)] != 0)) {
-                        mem[(bp + 2 + a)] = 1;
-                    } else {
-                        mem[(bp + 2 + a)] = 0;
-                    }
-                    ip += 4;
-                }
-                
-                else if (op == 20) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    
-                    if (mem[(bp + 2 + b)] == 0) {
-                        mem[(bp + 2 + a)] = 1;
-                    } else {
-                        mem[(bp + 2 + a)] = 0;
-                    }
-                    ip += 3;
-                }
-                
-                else if (op == 21) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    mem[(bp + 2 + a)] = (-mem[(bp + 2 + b)]);
-                    ip += 3;
-                }
-                
-                else if (op == 22) {
-                    a = mem[ip + 1];
-                    n = mem[ip + 2];
-                    mem[(bp + 2 + a)] = n;
-                    ip += 3;
-                }
-                
-                else if (op == 23) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    mem[(bp + 2 + a)] = mem[(bp + 2 + b)];
-                    ip += 3;
-                }
-                
-                else if (op == 24) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    c = mem[ip + 3];
-                    mem[(bp + 2 + a)] = mem[(mem[(bp + 2 + b)] + mem[(bp + 2 + c)])];
-                    ip += 4;
-                }
-                
-                else if (op == 25) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    c = mem[ip + 3];
-                    mem[(bp + 2 + c)] = mem[(mem[(bp + 2 + a)] + mem[(bp + 2 + b)])];
-                    ip += 4;
-                }
-                
-                else if (op == 26) {
-                    System.out.println("\nExiting VplStart Program......");
-                    System.exit(0);
-                    
-                }
-                
-                else if (op == 27) {
-                    
-                    a = mem[ip + 1];
-                    System.out.print("? ");
-                    
-                    mem[(bp + 2 + a)] = usr_input.nextInt();
-                    ip += 2;
-                }
-                
-                else if (op == 28) {
-                    a = mem[ip + 1];
-                    System.out.print(mem[(bp + 2 + a)]);
-                    ip += 2;
-                }
-                
-                else if (op == 29) {
-                    System.out.print("\n");
-                    ip += 1;
-                }
-                
-                else if (op == 30) {
-                    a = mem[ip + 1];
-                    System.out.print((char) mem[(bp + 2 + a)]);
-                    ip += 2;
-                }
-                
-                else if (op == 31) {
-                    a = mem[ip + 1];
-                    b = mem[ip + 2];
-                    hp = hp - mem[(bp + 2 + b)];
-                    mem[(bp + 2 + a)] = hp;
-                    ip += 3;
-                }
-                
-                else if (op == 32) {
-                    n = mem[ip + 1];
-                    bp = gp + n;
-                    sp = bp + 2;
-                    ip += 2;
-                }
-                
-                else if (op == 33) {
-                    n = mem[ip + 1];
-                    a = mem[ip + 1];
-                    
-                    mem[(gp + n)] = mem[(bp + 2 + a)];
-                    ip += 3;
-                }
-                
-                else if (op == 34) {
-                    a = mem[ip + 1];
-                    n = mem[ip + 1];
-                    mem[(bp + 2 + a)] = mem[(gp + n)];
-                    ip += 3;
-                }
+                ip += 3;
+            }
+            
+            else if (op == 21) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                mem[(bp + 2 + a)] = (-mem[(bp + 2 + b)]);
+                ip += 3;
+            }
+            
+            // Pass
+            else if (op == 22) {
+                a = mem[ip + 1];
+                n = mem[ip + 2];
+                mem[(bp + 2 + a)] = n;
+                ip += 3;
+            }
+            
+            else if (op == 23) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                mem[(bp + 2 + a)] = mem[(bp + 2 + b)];
+                ip += 3;
+            }
+            
+            else if (op == 24) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                c = mem[ip + 3];
+                mem[(bp + 2 + a)] = mem[(mem[(bp + 2 + b)] + mem[(bp + 2 + c)])];
+                ip += 4;
+            }
+            
+            else if (op == 25) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                c = mem[ip + 3];
+                mem[(mem[(bp + 2 + a)] + mem[(bp + 2 + b)])] = mem[(bp + 2 + c)];
+                ip += 4;
+            }
+            
+            else if (op == 26) {
+                System.out.println("\nExiting VplStart Program......");
+                System.exit(0); 
                 
             }
-           
             
-        } while (flag==0);
+            else if (op == 27) {
+                
+                a = mem[ip + 1];
+                System.out.print("? ");
+                mem[(bp + 2 + a)] = Integer.parseInt(usr_input.readLine());
+                ip += 2;
+            }
+            
+            else if (op == 28) {
+                a = mem[ip + 1];
+                System.out.print(mem[(bp + 2 + a)]);
+                ip += 2;
+            }
+            
+            else if (op == 29) {
+                System.out.print("\n");
+                ip +=1;
+            }
+            
+            else if (op == 30) {
+                a = mem[ip + 1];
+                System.out.print((char) mem[(bp + 2 + a)]);
+                ip += 2;
+            }
+            
+            else if (op == 31) {
+                a = mem[ip + 1];
+                b = mem[ip + 2];
+                hp = hp - mem[(bp + 2 + b)];
+                mem[(bp + 2 + a)] = hp;
+                ip += 3;
+            }
+            
+            else if (op == 32) {
+                n = mem[ip + 1];
+                bp = gp + n;
+                sp = bp + 2;
+                ip += 2;
+            }
+            
+            else if (op == 33) {
+                n = mem[ip + 1];
+                a = mem[ip + 2];
+                
+                mem[(gp + n)] = mem[(bp + 2 + a)];
+                ip += 3;
+            }
+            
+            else if (op == 34) {
+                a = mem[ip + 1];
+                n = mem[ip + 2];
+                mem[(bp + 2 + a)] = mem[(gp + n)];
+                ip += 3;
+            }
+            
+        } while (flag == 0);
         
     }// main
     
